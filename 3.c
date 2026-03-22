@@ -1,35 +1,54 @@
 #include <cs50.h>
+#include <ctype.h>
 #include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int main(void)
+bool only_digits(string s);
+
+int main(int argc, string argv[])
 {
-    int height;
-
-    do
+    if (argc != 2 || !only_digits(argv[1]))
     {
-        height = get_int("Height: ");
+        printf("Usage: ./caesar key\n");
+        return 1;
     }
-    while (height < 1 || height > 8);
 
-    for (int i = 1; i <= height; i++)
+    int key = atoi(argv[1]);
+    string plaintext = get_string("plaintext:  ");
+
+    printf("ciphertext: ");
+
+    for (int i = 0, n = strlen(plaintext); i < n; i++)
     {
-        for (int j = 0; j < height - i; j++)
+        char c = plaintext[i];
+
+        if (isupper(c))
         {
-            printf(" ");
+            printf("%c", (c - 'A' + key) % 26 + 'A');
         }
-
-        for (int k = 0; k < i; k++)
+        else if (islower(c))
         {
-            printf("#");
+            printf("%c", (c - 'a' + key) % 26 + 'a');
         }
-
-        printf("  ");
-
-        for (int k = 0; k < i; k++)
+        else
         {
-            printf("#");
+            printf("%c", c);
         }
-
-        printf("\n");
     }
+
+    printf("\n");
+    return 0;
+}
+
+bool only_digits(string s)
+{
+    for (int i = 0, n = strlen(s); i < n; i++)
+    {
+        if (!isdigit(s[i]))
+        {
+            return false;
+        }
+    }
+    return true;
 }
