@@ -1,81 +1,89 @@
 #include <cs50.h>
-#include <ctype.h>
-#include <math.h>
 #include <stdio.h>
 #include <string.h>
+#include <strings.h>
 
-int count_letters(string text);
-int count_words(string text);
-int count_sentences(string text);
+#define MAX 9
 
-int main(void)
+typedef struct
 {
-    string text = get_string("Text: ");
+    string name;
+    int votes;
+} candidate;
 
-    int letters = count_letters(text);
-    int words = count_words(text);
-    int sentences = count_sentences(text);
+candidate candidates[MAX];
+int candidate_count;
 
-    float L = ((float) letters / words) * 100;
-    float S = ((float) sentences / words) * 100;
+bool vote(string name);
+void print_winner(void);
 
-    int index = round(0.0588 * L - 0.296 * S - 15.8);
-
-    if (index < 1)
-    {
-        printf("Before Grade 1\n");
-    }
-    else if (index >= 16)
-    {
-        printf("Grade 16+\n");
-    }
-    else
-    {
-        printf("Grade %i\n", index);
-    }
-}
-
-int count_letters(string text)
+int main(int argc, string argv[])
 {
-    int count = 0;
-
-    for (int i = 0, n = strlen(text); i < n; i++)
+    if (argc < 2)
     {
-        if (isalpha(text[i]))
+        printf("Usage: plurality [candidate ...]\n");
+        return 1;
+    }
+
+    candidate_count = argc - 1;
+
+    if (candidate_count > MAX)
+    {
+        printf("Maximum number of candidates is %i\n", MAX);
+        return 2;
+    }
+
+    for (int i = 0; i < candidate_count; i++)
+    {
+        candidates[i].name = argv[i + 1];
+        candidates[i].votes = 0;
+    }
+
+    int voter_count = get_int("Number of voters: ");
+
+    for (int i = 0; i < voter_count; i++)
+    {
+        string name = get_string("Vote: ");
+
+        if (!vote(name))
         {
-            count++;
+            printf("Invalid vote.\n");
         }
     }
 
-    return count;
+    print_winner();
 }
 
-int count_words(string text)
+bool vote(string name)
 {
-    int count = 1;
-
-    for (int i = 0, n = strlen(text); i < n; i++)
+    for (int i = 0; i < candidate_count; i++)
     {
-        if (text[i] == ' ')
+        if (strcasecmp(candidates[i].name, name) == 0)
         {
-            count++;
+            candidates[i].votes++;
+            return true;
+        }
+    }
+    return false;
+}
+
+void print_winner(void)
+{
+    int max_votes = 0;
+
+    for (int i = 0; i < candidate_count; i++)
+    {
+        if (candidates[i].votes > max_votes)
+        {
+            max_votes = candidates[i].votes;
         }
     }
 
-    return count;
-}
-
-int count_sentences(string text)
-{
-    int count = 0;
-
-    for (int i = 0, n = strlen(text); i < n; i++)
+    for (int i = 0; i < candidate_count; i++)
     {
-        if (text[i] == '.' || text[i] == '!' || text[i] == '?')
+        if (candidates[i].votes == max_votes)
         {
-            count++;
+            printf("%s\n", candidates[i].name);
         }
     }
-
-    return count;
 }
